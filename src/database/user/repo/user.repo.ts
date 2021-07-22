@@ -27,6 +27,33 @@ export class UserRepository extends Repository<User> {
     });
   }
 
+  //! fetch usernames
+  async fetchUsernames(req: Request, res: Response) {
+    try {
+      let users = await this.createQueryBuilder("user").select('user.username')
+      .getMany();
+      if (users.length === 0) {
+        return res.send({
+          received: true,
+          filled: false,
+          data: "Oops! No Data found",
+        });
+      } else {
+        return res.send({
+          received: true,
+          filled: true,
+          data: users,
+        });
+      }
+    } catch (error) {
+      return res.send({
+        received: false,
+        filled: false,
+        data: "Something went wrong!",
+      });
+    }
+  }
+
   async login(req: Request, res: Response) {
     let { useremail, newuserpassword } = req.body;
     let isValidated = validateEmail(useremail);

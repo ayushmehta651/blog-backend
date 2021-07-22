@@ -26,3 +26,6 @@ const connectionOptions: ConnectionOptions = {
 };
 
 export = connectionOptions;
+
+//! Backend Deployed URL
+//! https://blogbackendflutter.herokuapp.com/

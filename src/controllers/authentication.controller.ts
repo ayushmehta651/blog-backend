@@ -21,5 +21,9 @@ export class AuthenticationController {
     let connectionmanager = getManager().getCustomRepository(UserRepository);
     await connectionmanager.decodeUserData(req, res);
   }
-  
+  static async getAllUsers(req: Request, res: Response) {
+    let connectionmanager =
+      getManager().getCustomRepository(UserRepository);
+    await connectionmanager.fetchUsernames(req, res);
+  }
 }
