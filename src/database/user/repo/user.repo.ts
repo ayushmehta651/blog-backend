@@ -30,8 +30,9 @@ export class UserRepository extends Repository<User> {
   //! fetch usernames
   async fetchUsernames(req: Request, res: Response) {
     try {
-      let users = await this.createQueryBuilder("user").select('user.username')
-      .getMany();
+      let users = await this.createQueryBuilder("user")
+        .select("user.username")
+        .getMany();
       if (users.length === 0) {
         return res.send({
           received: true,
@@ -70,11 +71,12 @@ export class UserRepository extends Repository<User> {
         .select("user.userpassword")
         .where("user.useremail = :query", { query: useremail })
         .getOne();
+
       //! Find the user id from the database
-      // let userId = await this.createQueryBuilder("user")
-      //   .select("user.id")
-      //   .where("user.useremail = :query", { query: useremail })
-      //   .getOne();
+      let userUsername = await this.createQueryBuilder("user")
+        .select("user.username")
+        .where("user.useremail = :query", { query: useremail })
+        .getOne();
 
       bcrypt.compare(
         newuserpassword,
@@ -85,12 +87,14 @@ export class UserRepository extends Repository<User> {
             return res.send({
               authentication: false,
               data: error,
+              username: null,
             });
           }
           if (!isPasswordMatched) {
             return res.send({
               authentication: false,
               data: "Incorrect password",
+              username: null,
             });
           }
           if (isPasswordMatched) {
@@ -107,11 +111,13 @@ export class UserRepository extends Repository<User> {
                   return res.send({
                     authentication: false,
                     data: error,
+                    username: null,
                   });
                 } else {
                   return res.send({
                     authentication: true,
                     data: authdata,
+                    username: userUsername,
                   });
                 }
               }
