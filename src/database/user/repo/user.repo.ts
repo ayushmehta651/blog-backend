@@ -5,20 +5,26 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+dotenv.config();
+
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   async fetchUser(req: Request, res: Response) {
     let jwt_secret = process.env.JWT_SECRET as string;
-    let tokendata = req.headers.authorization as string;
-    jwt.verify(tokendata, jwt_secret, async (error: any, authData: any) => {
+    let { jwttoken } = req.body;
+    console.log(jwttoken);
+    jwt.verify(jwttoken, jwt_secret, async (error: any, authData: any) => {
       if (error) {
-        console.log(error);
         return res.send({
-          error: error,
-          data: null,
+          confidentialData: error,
+          authData: null,
         });
       } else {
-        let data = await this.createQueryBuilder("user").select().getMany();
+        let data = await this.createQueryBuilder("user")
+
+          .where("user.useremail = :query", { query: authData.useremail })
+          .getOne();
+
         return res.send({
           confidentialData: data,
           authData: authData,
@@ -50,7 +56,7 @@ export class UserRepository extends Repository<User> {
       return res.send({
         received: false,
         filled: false,
-        data: "Something went wrong!",
+        data: error,
       });
     }
   }
@@ -169,14 +175,6 @@ export class UserRepository extends Repository<User> {
             user.userpassword = hashedpassword;
             user.useremail = useremail;
             await this.save(user);
-
-            // create JWT => Sign jwt
-            // let userid = this.createQueryBuilder("user")
-            //   .select(user.id)
-            //   .where("user.useremail = :query", {
-            //     query: useremail,
-            //   })
-            //   .getOne();
 
             jwt.sign(
               {

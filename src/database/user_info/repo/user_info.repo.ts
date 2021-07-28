@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { EntityRepository, getCustomRepository, Repository } from "typeorm";
 import { UserPostsEntity } from "../entity/user_info.entity";
 import { UserRepository } from "../../user/repo/user.repo";
+import { FollowingRepository } from "../../following/repo/following.repo";
 
 @EntityRepository(UserPostsEntity)
 export class UserPostsRepository extends Repository<UserPostsEntity> {
@@ -35,39 +36,43 @@ export class UserPostsRepository extends Repository<UserPostsEntity> {
     }
   }
 
-  //!fetch particular user posts
+  //!fetch particular user's following
   async fetchBlog(req: Request, res: Response) {
-    let { username } = req.body;
+    let { username } = req.body; //!account's username
     let userrepo = getCustomRepository(UserRepository);
+    let followingrepo = getCustomRepository(FollowingRepository);
     let user = await userrepo.findOne({ username: username });
 
     if (user) {
       try {
-        let userPosts = await this.createQueryBuilder("userposts")
+        let userFollowing = await followingrepo
+          .createQueryBuilder("following")
           .select()
-          .leftJoin("userposts.user", "user")
-          .where("user.username = :username", { username: user?.username })
+          .leftJoin("following.user", "user")
+          .where("user.username = :username", { username: username })
           .getMany();
 
-        if (userPosts.length === 0) {
-          return res.send({
-            received: true,
-            filled: false,
-            data: "Oops! No Data found",
-          });
-        } else {
-          return res.send({
-            received: true,
-            filled: true,
-            data: userPosts,
-          });
-        }
-      } catch (error) {
-        return res.send({
-          received: false,
-          filled: false,
-          data: "Something went wrong!",
+        let promises = userFollowing.map(async (ele) => {
+          let name: String;
+          name = ele.following_username;
+
+          //!fetch blogs of each person
+          let post = await this.createQueryBuilder("userposts")
+            .select()
+            .where("userposts.userUsername = :username", { username: name })
+            .getMany();
+
+          return { post, name };
         });
+
+        Promise.all(promises).then(function (results) {
+          return res.send({
+            data: results,
+            received: true,
+          });
+        });
+      } catch (err) {
+        console.log(err);
       }
     }
   }
@@ -94,4 +99,7 @@ export class UserPostsRepository extends Repository<UserPostsEntity> {
       });
     }
   }
+}
+function typeOf(indiVidiual: UserPostsEntity[]): any {
+  throw new Error("Function not implemented.");
 }

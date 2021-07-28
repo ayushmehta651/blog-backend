@@ -71,7 +71,7 @@ export class FollowerRepository extends Repository<FollowerEntity> {
       } else {
         return res.send({
           received: false,
-          count: -1,
+          count: 0,
           message: "Wrong username!",
         });
       }

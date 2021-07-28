@@ -3,7 +3,7 @@ import { AuthenticationController } from './../controllers/authentication.contro
 
 const authrouter = Router();
 
-authrouter.get("/verify",AuthenticationController.decodeUserData);
+authrouter.post("/verify",AuthenticationController.fetchUserData);
 authrouter.post("/signup", AuthenticationController.signUp);
 authrouter.post("/login", AuthenticationController.login);
 authrouter.get("/get-all-usernames", AuthenticationController.getAllUsers);

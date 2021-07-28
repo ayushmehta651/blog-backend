@@ -17,9 +17,9 @@ export class AuthenticationController {
     let connectionmanager = getManager().getCustomRepository(UserRepository);
     await connectionmanager.login(req, res);
   }
-  static async decodeUserData(req: Request, res: Response) {
+  static async fetchUserData(req: Request, res: Response) {
     let connectionmanager = getManager().getCustomRepository(UserRepository);
-    await connectionmanager.decodeUserData(req, res);
+    await connectionmanager.fetchUser(req, res);
   }
   static async getAllUsers(req: Request, res: Response) {
     let connectionmanager =
